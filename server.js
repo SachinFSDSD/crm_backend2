@@ -53,9 +53,9 @@ async function init() {
 
   try {
     user = await User.create({
-      name: "mrigank",
+      name: "sachin",
       userId: "admin", // It should be atleat 16, else will throw error
-      email: "mriganknitw@gmail.com", // If we don't pass this, it will throw the error
+      email: "sachinraju@gmail.com", // If we don't pass this, it will throw the error
       userType: "ADMIN",
       password: bcrypt.hashSync("mrigank", 8), //this field should be hidden from the end user
     });
