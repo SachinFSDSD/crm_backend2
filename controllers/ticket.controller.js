@@ -1,28 +1,18 @@
-/**
- * This is the controller for the ticket resource
- */
 const User = require("../models/user.model");
 const Ticket = require("../models/ticket.model");
 const constants = require("../utils/constants");
 const objectConvertor = require("../utils/objectConverter");
 const sendEmail = require("../utils/NotificationClient").sendEmail;
+require("../middlewares/authjwt");
 
-/**
- * Create a ticket :
- *   As soon as ticket is created, it will be assigned an Engineer if present
- */
 exports.createTicket = async (req, res) => {
   const ticketObject = {
     title: req.body.title,
     ticketPriority: req.body.ticketPriority,
     description: req.body.description,
     status: req.body.status,
-    reporter: req.userId, //this will be retrieved from the middleware
+    reporter: req.userId,
   };
-
-  /**
-   * Logic to find an Engineer in the Approved state
-   */
 
   const engineerCount = await User.count({
     userType: constants.userTypes.engineer,
@@ -35,7 +25,9 @@ exports.createTicket = async (req, res) => {
     userStatus: constants.userStatus.approved,
   }).skip(random);
 
-  ticketObject.assignee = engineer.userId;
+  if (engineer) {
+    ticketObject.assignee = engineer.userId;
+  }
 
   console.log(ticketObject);
 
@@ -50,36 +42,21 @@ exports.createTicket = async (req, res) => {
       user.ticketsCreated.push(ticket._id);
       await user.save();
 
-      //Updating the Engineer
-      engineer.ticketsAssigned.push(ticket._id);
-      await engineer.save();
-
-      /**
-       * Sending the notification to the assigned Engineer in asynchronous manner
-       */
-      //   sendEmail(
-      //     ticket._id,
-      //     "Ticket with id: " + ticket._id + " created",
-      //     ticket.description,
-      //     user.email + "," + engineer.email,
-      //     user.email
-      //   );
+      if (engineer) {
+        engineer.ticketsAssigned.push(ticket._id);
+        await engineer.save();
+      }
 
       res.status(201).send(objectConvertor.ticketResponse(ticket));
     }
   } catch (err) {
     console.log("Some error happened while creating ticket", err.message);
     res.status(500).send({
-      message: "Some internal server error",
+      message: "Some internal server error " + err,
     });
   }
 };
 
-/**
- * Update the ticket
- *
- *
- */
 exports.updateTicket = async (req, res) => {
   const ticket = await Ticket.findOne({ _id: req.params.id });
 
@@ -117,16 +94,6 @@ exports.updateTicket = async (req, res) => {
     const reporter = await User.findOne({
       userId: ticket.reporter,
     });
-    /**
-     * Sending the notification for ticket updation
-     */
-    // sendEmail(
-    //   ticket._id,
-    //   "Ticket with id: " + ticket._id + " updated",
-    //   ticket.description,
-    //   savedUser.email + "," + engineer.email + "," + reporter.email,
-    //   savedUser.email
-    // );
 
     res.status(200).send(objectConvertor.ticketResponse(updatedTicket));
   } else {
@@ -140,30 +107,11 @@ exports.updateTicket = async (req, res) => {
 };
 
 exports.getAllTicketsForAdmin = async (req, res) => {
-  /**
-   * First find the type of user
-   * 1. ADMIN should get the list of all the tickets in the descending order of creation date
-   * 2. Customer should be able to see only the tickets created by him/her
-   * 3. Engineer should be able to see all the tickets assigned to him or created by him
-   *
-   */
-
   const tickets = await Ticket.find();
   res.status(200).send(objectConvertor.ticketListResponse(tickets));
 };
 
-/**
- * Get the list of all the tickets created by me or assigned to me
- */
 exports.getAllTickets = async (req, res) => {
-  /**
-   * First find the type of user
-   * 1. ADMIN should get the list of all the tickets in the descending order of creation date
-   * 2. Customer should be able to see only the tickets created by him/her
-   * 3. Engineer should be able to see all the tickets assigned to him or created by him
-   *
-   */
-
   const queryObj = {};
 
   if (req.query.status != undefined) {

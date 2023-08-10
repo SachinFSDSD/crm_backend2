@@ -14,13 +14,6 @@ const cors = require("cors");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-/**
- * Configuring CORS
- * Current configuration ensures access from everywhere
- * Think twice, while doing the same in the Production.
- *
- * Why ? Make sure you ask your doubt in the sessions :P
- */
 app.use(cors());
 
 /**
