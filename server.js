@@ -1,6 +1,3 @@
-/**
- * This file will be the start point of the application.
- */
 const serverConfig = require("./configs/server.config");
 const dbConfig = require("./configs/db.config");
 const mongoose = require("mongoose");
@@ -16,10 +13,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors());
 
-/**
- * DB Connection initialization
- */
-
 mongoose.connect(dbConfig.DB_URL);
 const db = mongoose.connection;
 db.on("error", () => {
@@ -30,12 +23,6 @@ db.once("open", () => {
   init();
 });
 
-/**
- *
- * @returns
- * This method is for the demonstration purpose,
- * ideally one ADMIN user should have been created in the backend
- */
 async function init() {
   var user = await User.findOne({ userId: "admin" });
 

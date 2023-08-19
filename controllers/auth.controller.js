@@ -9,9 +9,6 @@ const config = require("../configs/auth.config");
  * Controller for the signup flow
  */
 exports.signup = async (req, res) => {
-  /**
-   * Inside the sign up call
-   */
   var userStatus = req.body.userSatus;
   if (!req.body.userSatus) {
     if (
@@ -53,13 +50,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-/**
- * Controller for the sign in flow
- */
-
 exports.signin = async (req, res) => {
-  //Fetch the user based on the userId
-  //Validating the userId
   const user = await User.findOne({ userId: req.body.userId });
   console.log(user);
   if (user == null) {
